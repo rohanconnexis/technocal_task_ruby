@@ -25,22 +25,47 @@ class Slot
   def read_file(file_name)
     count = 0
     arr = []
+    car_hash = {}
+    slots = []
+    reg_no_color = []
     File.open(file_name, "r") do |f|
       f.each_line do |line|
-        puts "line in file.................."
-        puts arr = line.split(" ")
-	puts no_of_slot = arr[0]
-	puts reg_no = arr[1]
-	puts color = arr[2]
+        arr = line.split(" ")
         if(arr[0] == "create_parking_lot​")
           puts "creating slots"
 	  num_of_slots = line.split(" ").last.to_i
-	  create_slots_from_file(num_of_slots)
-	elsif(arr[0] == 'park​')
-	  puts "reg no............#{arr[1]}...............ttttttttttttttttt"
+	  slots = create_slots_from_file(num_of_slots)
+	end
+	if(arr[0] == 'park​')
+	  puts "add to hash............"+ line.split(" ")[2]
+	   reg_no_color << line.split(" ")[2]
+	   reg_no_color << line.split(" ")[4]
+	  add_to_hash(reg_no_color, car_hash, count)
+	end
+	if(arr[0] == 'leave​')
+	  puts "empty the slot"
+	  slot_no = line.split(" ")[2]
+	  slot_to_free(slot_no, car_hash)
+	end
+	if(arr[0] == 'slot_numbers_for_cars_with_colour​')
+	  puts "slot_numbers_for_cars_with_colour............................"
+	  reg_no = line.split(" ")[2]
+	  find_slot_for_registration_no(reg_no, car_hash,slots)
+	end
+	if(arr[0] == 'registration_numbers_for_cars_with_colour​')
+	  puts "registration_numbers_for_cars_with_colour.................."
+	  color = line.split(" ")[4]
+	  get_list_of_registration_nos(color, car_hash)
+	end
+	if(arr[0] == 'status')
+	  puts "print table "
         end
       end
     end
+  end
+
+  def add_to_hash(reg_no_color, car_hash, count)
+    car_hash[count+1] = reg_no_color
   end
 
   def create_slots_from_file(num_of_slots)
@@ -52,6 +77,38 @@ class Slot
       end
       puts "created lot of slots #{slots} "
       slots.sort
+  end
+
+  def find_slot_for_registration_no(reg_no, slot_hash,num_of_slots)
+     print_slot(reg_no, slot_hash)
+  end
+
+  def print_slot(reg_no, slot_hash)
+     slot_hash.each do |key,value|
+       if value.include? reg_no
+         puts "Alloated slot no #{key}"
+       end
+     end
+   end
+
+  def get_list_of_registration_nos(color, slot_hash)
+    slot_hash.each do |key,value|
+       if value.include?("'#{color}'")
+         puts "#{value[0]}"
+       end
+     end
+  end
+
+  def print_table(car_hash)
+    puts "Slot No." + "     " + "Registration​ ​ No." + "     " + "Color" 
+    cars.each do |key, value|
+      puts "#{key}" + "     " +  "#{value[0]}" + "     " + "#{value[1]}"
+    end
+  end
+
+  def slot_to_free(slot_no, cars)
+    cars[slot_no] = ''
+    puts "Slot #{slot_no} is free "
   end
 end
 
@@ -112,7 +169,7 @@ class Car
 
   def get_list_of_registration_nos(color, slot_hash)
     slot_hash.each do |key,value|
-       if value.include? color
+       if value.include?("'#{color}'")
          puts "#{value[0]}"
        end
      end
